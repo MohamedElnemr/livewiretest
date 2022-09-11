@@ -3,8 +3,8 @@
 
     <h3 class="text-center">Add New Task</h3>
 
-<form enctype="multipart/form-data">
-
+<form wire:submit.prevent="addTask" enctype="multipart/form-data">
+@csrf
     <div class="form-group">
         <label for="title">Title</label>
         <input type="text" wire:model="title" class="form-control">
@@ -13,7 +13,7 @@
     </div>
 
     <div class="form-group">
-        <button wire:click.prevent="addTask" class="btn btn-primary btn-block">Add</button>
+        <button class="btn btn-primary btn-block">Add</button>
     </div>
     @if (session()->has('message'))
     <div class="div alert alert-success">

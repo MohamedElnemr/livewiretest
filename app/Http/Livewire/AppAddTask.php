@@ -2,62 +2,42 @@
 
 namespace App\Http\Livewire;
 
+use Intervention\Image\Facades\Image;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
 
+class AppAddTask extends Component {
+	use WithFileUploads;
 
-class AppAddTask extends Component
-{
-    use WithFileUploads;
+	public $title;
+	public $photo;
+	protected $rules = [
+		'title' => 'required|min:3',
+		'photo' => 'required',
+	];
 
-    public $title;
-    public $photo;
+	public function updated($title) {
+		$this->validateOnly($title);
+	}
 
+	public function addTask() {
+		$data  = $this->validate();
+		$image = $this->photo;
 
+		$filename = time().'.'.$image->getClientOriginalExtension();
+		Image::make($image)->save('images/posts/'.$filename);
+		$data['photo'] = $filename;
+		$data['status'] = TRUE;
 
-    protected $rules = [
-        'title'=>'required|min:3',
-        'photo'=>'required'
-    ];
+		auth()->user()->tasks()->create($data);
 
-    public function render()
-    {
-        return view('livewire.app-add-task');
-    }
+		$this->title = "";
+		$this->emit('taskAdded');
+		session()->flash('message', 'Task was added succesfuly ');
+	}
 
-    public function updated($title)
-    {
-        $this->validateOnly($title);
-    }
-
-
-    public function addTask()
-    {
-
-        $this->validate();
-
-        if ($this->photo)
-        {
-            $file     = $this->photo;
-            $filename = Str::random(5).$file->getClientOriginalName();
-            $file->move(public_path("/public/images/"), $filename);
-
-            $input['photo'] = $filename;
-        }
-
-        auth()->user()->tasks()->create([
-            'title' => $this->title,
-            'photo' =>$this->photo,
-            'status' => True,
-        ]);
-        // $this->photo->store('photos');
-
-        $this->title = "";
-
-        $this->emit('taskAdded');
-        session()->flash('message','Task was added succesfuly ');
-    }
-
-
+	public function render() {
+		return view('livewire.app-add-task');
+	}
 }
